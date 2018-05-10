@@ -1,0 +1,31 @@
+{
+  "name": "auth-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "a Sails application",
+  "keywords": [],
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "bluebird": "^3.5.1",
+    "ejs": "^2.5.8",
+    "include-all": "^1.0.0",
+    "jsonwebtoken": "^8.2.1",
+    "lodash": "^4.17.5",
+    "os-tmpdir": "^1.0.2",
+    "rc": "1.0.1",
+    "sails": "~0.12.14",
+    "sails-disk": "~0.10.9",
+    "sails-mysql": "^0.11.5"
+  },
+  "scripts": {
+    "debug": "node debug app.js",
+    "start": "node app.js"
+  },
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/anonymous node/sails user/auth-example.git"
+  },
+  "author": "anonymous node/sails user",
+  "license": ""
+}
