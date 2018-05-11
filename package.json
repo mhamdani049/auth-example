@@ -27,5 +27,6 @@
     "url": "git://github.com/anonymous node/sails user/auth-example.git"
   },
   "author": "anonymous node/sails user",
-  "license": ""
+  "license": "ISC",
+  "devDependencies": {}
 }
