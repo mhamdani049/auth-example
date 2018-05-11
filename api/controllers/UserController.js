@@ -13,9 +13,6 @@ module.exports = {
     orm: function(req, res) {
         var perPage = req.param("per_page");
         var currentPage = req.param("page");
-        var email = req.param("email") ? req.param("email") : "";
-        sails.log("--email--");
-        sails.log(email);
 
         // var conditions = {active: true};
         // PaginationService.paginate(res, User, conditions, currentPage, perPage, [{name: 'AssociatedModel', query: {isDeleted: false}}], 'createdAt DESC');
