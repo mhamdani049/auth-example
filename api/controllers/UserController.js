@@ -11,13 +11,19 @@ var os = require('os'); os.tmpDir = os.tmpdir;
 module.exports = {
 
     orm: function(req, res) {
-        var perPage = req.param("per_page");
-        var currentPage = req.param("page");
+        var sort = req.param("sort");
+        var skip = req.param("skip");
+        var limit = req.param("limit");
+
+        sails.log("sort:"+sort+", skip:"+skip+", limit:"+limit);
+        // sort
+        // skip
+        // limit
 
         // var conditions = {active: true};
         // PaginationService.paginate(res, User, conditions, currentPage, perPage, [{name: 'AssociatedModel', query: {isDeleted: false}}], 'createdAt DESC');
         var conditions = {};
-        PaginationService.paginate(res, User, conditions, currentPage, perPage, [], 'createdAt DESC');
+        PaginationService.paginate(res, User, conditions, limit, skip, [], 'createdAt DESC');
     },
 
     create: function (req, res) {
