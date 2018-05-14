@@ -14,16 +14,12 @@ module.exports = {
         var sort = req.param("sort");
         var skip = req.param("skip");
         var limit = req.param("limit");
-
-        sails.log("sort:"+sort+", skip:"+skip+", limit:"+limit);
-        // sort
-        // skip
-        // limit
+        var where = req.param("where") ? JSON.parse(req.param("where")) : {};
 
         // var conditions = {active: true};
         // PaginationService.paginate(res, User, conditions, currentPage, perPage, [{name: 'AssociatedModel', query: {isDeleted: false}}], 'createdAt DESC');
-        var conditions = {};
-        PaginationService.paginate(res, User, conditions, limit, skip, [], 'createdAt DESC');
+        var conditions = where;
+        PaginationService.paginate(res, User, conditions, skip, limit, [], 'createdAt DESC');
     },
 
     create: function (req, res) {
@@ -56,4 +52,18 @@ module.exports = {
     me: function (req, res) {
         return ResponseService.json(200, res, "Current User", req.user)
     },
+
+    deleteMany: function(req, res) {
+        var ids = JSON.parse(req.param("ids"));
+        if (ids.length > 0) {
+            ids.forEach(function (id) {
+                User.destroy({ id: id}, function (error, destroyedComments) {
+                    if (error) { return ResponseService.json(400, res, "error");  }
+                    console.log("destroyedComments:", destroyedComments)
+                })
+            })
+            return ResponseService.json(200, res, "User deleted successfully")
+        }
+        return ResponseService.json(400, res, "error");
+    }
 };
