@@ -28,7 +28,7 @@ module.exports = {
         }
 
         var allowedParameters = [
-            "email", "password"
+            "email", "password", "firstName", "lastName"
         ]
 
         var data = _.pick(req.body, allowedParameters);
