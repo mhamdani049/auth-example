@@ -6,7 +6,7 @@
  */
 
 var Promise = require("bluebird");
-var bcrypt = require("bcryptjs")
+var bcrypt = require("bcryptjs");
 var os = require('os'); os.tmpDir = os.tmpdir;
 var uuid = require('node-uuid');
 

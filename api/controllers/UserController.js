@@ -7,6 +7,7 @@
 
 var _ = require('lodash');
 var os = require('os'); os.tmpDir = os.tmpdir;
+var bcrypt = require("bcryptjs");
 
 module.exports = {
 
@@ -65,5 +66,30 @@ module.exports = {
             return ResponseService.json(200, res, "User deleted successfully")
         }
         return ResponseService.json(400, res, "error");
+    },
+    
+    changePassword: function (req, res) {
+        if (req.body.password !== req.body.confirmPassword) {
+            return ResponseService.json(401, res, "Password doesn't match")
+        }
+
+        var allowedParameters = [
+            "password","id"
+        ];
+
+        var data = _.pick(req.body, allowedParameters);
+        bcrypt.hash(data.password, 10, function (err, hash) {
+            if (err) return ResponseService.json(400, res, "error");
+            data.password = hash;
+        });
+
+        User.update({id: data.id}).set(data).then(function (user) {
+            return ResponseService.json(200, res, "User change password successfully", user)
+        }).catch(function (error) {
+                if (error.invalidAttributes){
+                    return ResponseService.json(400, res, "User could not be created", error.Errors)
+                }
+            }
+        )
     }
 };

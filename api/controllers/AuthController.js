@@ -4,7 +4,7 @@ module.exports = {
         var email = req.param('email');
         var password = req.param('password');
 
-        verifyParams(res, email, password)
+        verifyParams(res, email, password);
 
         User.findOne({email: email}).then(function (user) {
             if (!user) {

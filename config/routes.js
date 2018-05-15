@@ -44,6 +44,7 @@ module.exports.routes = {
     'get /me': 'UserController.me',
     'get /user/orm': 'UserController.orm',
     'post /user/deleteMany': 'UserController.deleteMany',
+    'post /user/changePassword': 'UserController.changePassword',
 
     'get /resolve': 'ReviewController.resolve',
 

@@ -39,7 +39,11 @@ module.exports = {
             var page = 1;
             var _page = skip/limit;
             if (_page > 0) {
-                page = _page;
+                if(_page == 1) {
+                    page = _page+1;
+                } else {
+                    page = _page;
+                }
             }
             return page;
         }
