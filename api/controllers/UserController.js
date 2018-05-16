@@ -9,6 +9,8 @@ var _ = require('lodash');
 var os = require('os'); os.tmpDir = os.tmpdir;
 var bcrypt = require("bcryptjs");
 var sid = require('shortid');
+var formidable = require('formidable');
+const { parse } = require('querystring');
 
 // Setup id generator
 sid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@');
@@ -49,6 +51,16 @@ module.exports = {
         if (req.body.password !== req.body.confirmPassword) {
             return ResponseService.json(401, res, "Password doesn't match")
         }
+		
+		// parse a file upload
+		//var form = new formidable.IncomingForm();
+		//form.parse(req);
+		//form.on('fileBegin', function (name, file){
+		//	file.path = __dirname + '/uploads/' + file.name;
+		//});
+		//form.on('file', function (name, file){
+		//	console.log('Uploaded ' + file.name);
+		//});
 
         var allowedParameters = [
             "email", "password", "firstName", "lastName"
