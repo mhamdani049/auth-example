@@ -36,7 +36,11 @@ module.exports.policies = {
 
   'AuthController': {
       '*': true
-  }
+  },
+
+  'FileController': {
+      '*': true
+  },
 
   /***************************************************************************
   *                                                                          *

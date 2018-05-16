@@ -48,6 +48,11 @@ module.exports.routes = {
 
     'get /resolve': 'ReviewController.resolve',
 
+    'get /public/images/*': {
+        controller: 'FileController',
+        action: 'get'
+    },
+
   /***************************************************************************
   *                                                                          *
   * Custom routes here...                                                    *

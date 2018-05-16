@@ -42,6 +42,12 @@ module.exports = {
             required: true,
             columnName: "encryptedPassword"
         },
+        avatarUrl: {
+            type: "string"
+        },
+        avatarFd: {
+            type: "string"
+        },
 
         toJSON: function () {
             var obj = this.toObject();

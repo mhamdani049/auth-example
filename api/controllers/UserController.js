@@ -8,6 +8,25 @@
 var _ = require('lodash');
 var os = require('os'); os.tmpDir = os.tmpdir;
 var bcrypt = require("bcryptjs");
+var sid = require('shortid');
+
+// Setup id generator
+sid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@');
+sid.seed(42);
+function safeFilename(name) {
+    name = name.replace(/ /g, '-');
+    name = name.replace(/[^A-Za-z0-9-_\.]/g, '');
+    name = name.replace(/\.+/g, '.');
+    name = name.replace(/-+/g, '-');
+    name = name.replace(/_+/g, '_');
+    return name;
+}
+function fileMinusExt(fileName) {
+    return fileName.split('.').slice(0, -1).join('.');
+}
+function fileExtension(fileName) {
+    return fileName.split('.').slice(-1);
+}
 
 module.exports = {
 
@@ -24,13 +43,16 @@ module.exports = {
     },
 
     create: function (req, res) {
+        console.log(req);
+        console.log("===========================");
+        console.log(req.body);
         if (req.body.password !== req.body.confirmPassword) {
             return ResponseService.json(401, res, "Password doesn't match")
         }
 
         var allowedParameters = [
             "email", "password", "firstName", "lastName"
-        ]
+        ];
 
         var data = _.pick(req.body, allowedParameters);
         console.log(data);
@@ -39,7 +61,42 @@ module.exports = {
             var responseData = {
                 user: user,
                 token: JwtService.issue({id: user.id})
-            }
+            };
+
+            //config upload
+            var uploadFile = req.file("avatar");
+            var fileName = '';
+            uploadFile.upload({
+                dirname: require('path').resolve(sails.config.appPath, 'public/images/avatar'),
+                maxBytes: 10000000, // don't allow the total upload size exceed ~10mb
+                saveAs: function (file, cb) {
+                    var id = sid.generate();
+                    fileName = id + "." + fileExtension(safeFilename(file.filename));
+                    cb(null, fileName);
+                }
+            }, function onUploadComplete (err, uploadedFiles) {
+                if (err) return ResponseService.json(400, res, "error");
+
+                // if no files where uploaded, response with an error
+                if (uploadedFiles.length === 0) {
+                    console.log("No file was uploaded");
+                } else {
+                    // Get the base URL for our deployed application from our custom config
+                    // (e.g. this might be "http://foobar.example.com:1339" or "https://example.com")
+                    var baseUrl = "http://localhost:1337";
+
+                    // Save the "fd" and the url where the avatar for a user can be accessed
+                    User.update({id: user.id}, {
+                        // Generate a unique URL where the avatar can be downloaded.
+                        avatarUrl: require('util').format('%s/public/images/avatar/%s', baseUrl, fileName),
+                        // Grab the first file and use it's `fd` (file descriptor)
+                        avatarFd: uploadedFiles[0].fd
+                    }).exec(function (err) {
+                        if (err) return ResponseService.json(400, res, "error");
+                    });
+                };
+            });
+
             return ResponseService.json(200, res, "User created successfully", responseData)
         }).catch(function (error) {
                 if (error.invalidAttributes){

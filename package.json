@@ -29,5 +29,8 @@
   },
   "author": "anonymous node/sails user",
   "license": "ISC",
-  "devDependencies": {}
+  "devDependencies": {
+    "mkdirp": "^0.5.1",
+    "shortid": "^2.2.8"
+  }
 }
