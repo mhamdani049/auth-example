@@ -52,7 +52,7 @@ module.exports = {
                 if(_page == 1) {
                     page = _page+1;
                 } else {
-                    page = _page;
+                    page = _page+1;
                 }
             }
             return page;
