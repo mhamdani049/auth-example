@@ -9,8 +9,7 @@ var _ = require('lodash');
 var os = require('os'); os.tmpDir = os.tmpdir;
 var bcrypt = require("bcryptjs");
 var sid = require('shortid');
-var formidable = require('formidable');
-const { parse } = require('querystring');
+const fs = require('fs');
 
 // Setup id generator
 sid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@');
@@ -45,30 +44,15 @@ module.exports = {
     },
 
     create: function (req, res) {
-        console.log(req);
-        console.log("===========================");
-        console.log(req.body);
         if (req.body.password !== req.body.confirmPassword) {
             return ResponseService.json(401, res, "Password doesn't match")
         }
-		
-		// parse a file upload
-		//var form = new formidable.IncomingForm();
-		//form.parse(req);
-		//form.on('fileBegin', function (name, file){
-		//	file.path = __dirname + '/uploads/' + file.name;
-		//});
-		//form.on('file', function (name, file){
-		//	console.log('Uploaded ' + file.name);
-		//});
 
         var allowedParameters = [
             "email", "password", "firstName", "lastName"
         ];
 
         var data = _.pick(req.body, allowedParameters);
-        console.log(data);
-
         User.create(data).then(function (user) {
             var responseData = {
                 user: user,
@@ -127,10 +111,22 @@ module.exports = {
         var ids = JSON.parse(req.param("ids"));
         if (ids.length > 0) {
             ids.forEach(function (id) {
-                User.destroy({ id: id}, function (error, destroyedComments) {
+                User.destroy({ id: id}, function (error, destroyed) {
                     if (error) { return ResponseService.json(400, res, "error");  }
-                    console.log("destroyedComments:", destroyedComments)
-                })
+
+                    // delete avatar
+                    var avatarFd = destroyed[0].avatarFd;
+                    fs.exists(avatarFd, function (exists) {
+                        if (exists) {
+                            fs.unlink(avatarFd, function (err) {
+                                if (err) console.log(err);
+                                console.log("Item has been removed successfully "+avatarFd+".");
+                            });
+                        }
+                    });
+
+                    console.log("destroyed:", destroyed);
+                });
             })
             return ResponseService.json(200, res, "User deleted successfully")
         }
@@ -156,9 +152,99 @@ module.exports = {
             return ResponseService.json(200, res, "User change password successfully", user)
         }).catch(function (error) {
                 if (error.invalidAttributes){
-                    return ResponseService.json(400, res, "User could not be created", error.Errors)
+                    return ResponseService.json(400, res, "User could not be updated", error.Errors)
                 }
             }
         )
+    },
+
+    delete: function (req, res) {
+        var id = req.param("id");
+        if (id) {
+            User.destroy({ id: id}, function (error, destroyed) {
+                if (error) { return ResponseService.json(400, res, "error");  }
+
+                // delete avatar
+                var avatarFd = destroyed[0].avatarFd;
+                fs.exists(avatarFd, function (exists) {
+                    if (exists) {
+                        fs.unlink(avatarFd, function (err) {
+                            if (err) console.log(err);
+                            console.log("Item has been removed successfully "+avatarFd+".");
+                        });
+                    }
+                });
+
+                console.log("destroyed:", destroyed);
+            });
+            return ResponseService.json(200, res, "User deleted successfully")
+        }
+        return ResponseService.json(400, res, "error");
+    },
+    
+    update: function (req, res) {
+        var allowedParameters = [
+            "id", "email", "password", "firstName", "lastName"
+        ];
+
+        var data = _.pick(req.body, allowedParameters);
+        User.update({id: data.id}).set(data).then(function (user) {
+
+            // change avatar
+            var uploadFile = req.file("avatar");
+            var fileName = '';
+            uploadFile.upload({
+                dirname: require('path').resolve(sails.config.appPath, 'public/images/avatar'),
+                maxBytes: 10000000, // don't allow the total upload size exceed ~10mb
+                saveAs: function (file, cb) {
+                    var id = sid.generate();
+                    fileName = id + "." + fileExtension(safeFilename(file.filename));
+                    cb(null, fileName);
+                }
+            }, function onUploadComplete (err, uploadedFiles) {
+                if (err) return ResponseService.json(400, res, "error");
+
+                // if no files where uploaded, response with an error
+                if (uploadedFiles.length === 0) {
+                    console.log("No file was uploaded");
+                } else {
+
+                    // Get the base URL for our deployed application from our custom config
+                    // (e.g. this might be "http://foobar.example.com:1339" or "https://example.com")
+                    var baseUrl = "http://localhost:1337";
+
+                    // Delete old avatar if exists
+                    console.log(uploadedFiles);
+                    var avatarFd = user[0].avatarFd;
+
+                    fs.exists(avatarFd, function (exists) {
+                        if (exists) {
+                            fs.unlink(avatarFd, function (err) {
+                                if (err) {
+                                    console.log(err)
+                                } else {
+                                    // Save the "fd" and the url where the avatar for a user can be accessed
+                                    User.update({id: data.id}, {
+                                        // Generate a unique URL where the avatar can be downloaded.
+                                        avatarUrl: require('util').format('%s/public/images/avatar/%s', baseUrl, fileName),
+                                        // Grab the first file and use it's `fd` (file descriptor)
+                                        avatarFd: uploadedFiles[0].fd
+                                    }).exec(function (err) {
+                                        if (err) return ResponseService.json(400, res, "error");
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                };
+            });
+            return ResponseService.json(200, res, "User change password successfully", user);
+
+        }).catch(function (error) {
+            if (error.invalidAttributes){
+                return ResponseService.json(400, res, "User could not be updated", error.Errors)
+            }
+        });
     }
 };

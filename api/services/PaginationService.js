@@ -13,8 +13,17 @@ module.exports = {
         };
 
         var conditions = criteria || {};
+
+        // convert find for like %%
+        var contains = {};
+        for (var key in criteria) {
+            console.log("key:"+key+", value:"+criteria[key]);
+            contains[key] = {};
+            contains[key]['contains'] = criteria[key]
+        }
+
         model.count(conditions).then(function (count) {
-            var findQuery = model.find(conditions);
+            var findQuery = model.find(contains);
             if (sort) {
                 findQuery = findQuery.sort(sort);
             }
@@ -32,7 +41,8 @@ module.exports = {
             }
             return ResponseService.json(200, res, 'Data retrieved successfully', data, meta);
         }).catch(function (err) {
-            return ResponseService.jsonResolveError(err, res);
+            return res.ok(err);
+            //return ResponseService.jsonResolveError(err, res);
         });
 
         function calculatePage(skip, limit) {
