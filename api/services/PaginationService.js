@@ -22,7 +22,7 @@ module.exports = {
             contains[key]['contains'] = criteria[key]
         }
 
-        model.count(conditions).then(function (count) {
+        model.count(contains).then(function (count) {
             var findQuery = model.find(contains);
             if (sort) {
                 findQuery = findQuery.sort(sort);
