@@ -2,24 +2,24 @@ var _ = require('lodash');
 
 module.exports = {
     paginate: function (res, model, criteria, skip, limit, populate_data, sort) {
-
         skip: parseInt(skip) || 0;
-        limit: parseInt(limit) || 2;
+        limit: parseInt(limit) || 25;
         var page = calculatePage(skip, limit);
 
         var pagination = {
             page: parseInt(page) || 0,
-            limit: parseInt(limit) || 2
+            limit: parseInt(limit) || 25
         };
 
-        var conditions = criteria || {};
-
-        // convert find for like %%
         var contains = {};
         for (var key in criteria) {
-            console.log("key:"+key+", value:"+criteria[key]);
-            contains[key] = {};
-            contains[key]['contains'] = criteria[key]
+		   console.log("key:"+key+", value:"+criteria[key]);
+		   if (typeof criteria[key].contains !== 'undefined') {
+			   contains[key] = {};
+			   contains[key]['contains'] = criteria[key]
+		   } else {
+			   contains[key] = criteria[key];
+		   }
         }
 
         model.count(contains).then(function (count) {
@@ -27,7 +27,15 @@ module.exports = {
             if (sort) {
                 findQuery = findQuery.sort(sort);
             }
-
+            if (_.isArray(populate_data) && !_.isEmpty(populate_data)) {
+                _(populate_data).forEach(function (populate) {
+                    if (_.isObject(populate)) {
+                        findQuery = findQuery.populate(populate.name, populate.query);
+                    } else {
+                        findQuery = findQuery.populate(populate);
+                    }
+                });
+            }
             findQuery = findQuery.paginate(pagination);
             return [count, findQuery];
         }).spread(function (count, data) {

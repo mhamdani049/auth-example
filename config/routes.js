@@ -47,6 +47,10 @@ module.exports.routes = {
     'post /user/deleteMany': 'UserController.deleteMany',
     'post /user/update': 'UserController.update',
     'post /user/changePassword': 'UserController.changePassword',
+    'get /user/rolePermission': 'UserController.rolePermission',
+
+    'get /driver/orm': 'DriverController.orm',
+    'post /driver/deleteMany': 'DriverController.deleteMany',
 
     'get /resolve': 'ReviewController.resolve',
 

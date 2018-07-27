@@ -4,6 +4,8 @@ module.exports = {
         var email = req.param('email');
         var password = req.param('password');
 
+        // $2a$10$LqxhN7X0ghrEKWIYzPP5beIyrl6NNhhAA1n7nzYG9VdzKtv3ibNfi
+
         verifyParams(res, email, password);
 
         User.findOne({email: email}).then(function (user) {
